@@ -4,7 +4,7 @@ from typing import Optional
 from iam.domain.entities import Device
 from iam.infrastructure.models import Device as DeviceModel
 import uuid
-from datetime import datetime
+from datetime import datetime, UTC
 
 class DeviceRepository:
     @staticmethod
@@ -49,6 +49,6 @@ class DeviceRepository:
             device = DeviceModel.create(
                 device_id=str(uuid.uuid4()),
                 api_key="test-api-key-123",
-                created_at=datetime.utcnow()
+                created_at=datetime.now(UTC)
             )
             return Device(device.device_id, device.api_key, device.created_at)

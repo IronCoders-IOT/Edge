@@ -2,7 +2,7 @@
 from peewee import Model, CharField, DateTimeField
 from shared.infrastructure.database import db
 import uuid
-from datetime import datetime
+from datetime import datetime, UTC
 
 class Device(Model):
     """model representing a device in the IAM service.
@@ -32,5 +32,5 @@ class Device(Model):
         return cls.create(
             device_id=device_id,
             api_key=api_key,
-            created_at=datetime.utcnow()
+            created_at=datetime.now(UTC)
         )
