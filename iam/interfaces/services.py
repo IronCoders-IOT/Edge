@@ -9,7 +9,7 @@ iam_api = Blueprint('iam_api', __name__)
 """Initialize dependencies for IAM service."""
 auth_service = AuthApplicationService()
 
-@iam_api.route('/devices/register', methods=['POST'])
+@iam_api.route('/api/v1/devices/register', methods=['POST'])
 def register_device():
     """Register a new device and get its credentials.
     
