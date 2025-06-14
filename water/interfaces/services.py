@@ -20,6 +20,7 @@ def create_water_record():
         bpm = data["bpm"]
         created_at = data.get("created_at")
         record = water_record_service.create_water_record(
+            request.headers.get("X-API-Key"),
             bpm=bpm,
             created_at=created_at
         )
