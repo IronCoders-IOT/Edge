@@ -12,7 +12,7 @@ def init_db() -> None:
     Initializes the database connection.
     """
     db.connect()
-    from health.infrastructure.models import HealthRecord
+    from water.infrastructure.models import WaterRecord
     from iam.infrastructure.models import Device
-    db.create_tables([Device, HealthRecord], safe=True)
+    db.create_tables([Device, WaterRecord], safe=True)
     db.close()
