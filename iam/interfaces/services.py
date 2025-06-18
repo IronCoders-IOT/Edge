@@ -9,19 +9,6 @@ iam_api = Blueprint('iam_api', __name__)
 """Initialize dependencies for IAM service."""
 auth_service = AuthApplicationService()
 
-@iam_api.route('/api/v1/devices/register', methods=['POST'])
-def register_device():
-    """Register a new device and get its credentials.
-    
-    Returns:
-        Response: JSON response containing the device_id and api_key.
-    """
-    device = auth_service.register_device()
-    return jsonify({
-        "device_id": device.device_id,
-        "api_key": device.api_key
-    }), 201
-
 def authenticate_request() -> None | tuple[Response, int]:
     """Authenticate the incoming request using device ID and API key.
     This function checks for the presence of 'device_id' in the request JSON

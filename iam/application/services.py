@@ -12,13 +12,13 @@ class AuthApplicationService:
         self.device_repository = DeviceRepository()
         self.auth_service = AuthService()
 
-    def register_device(self) -> Device:
-        """Register a new device with automatically generated ID and API key.
+    def register_device(self, device_id: str) -> tuple[Device, bool]:
+        """Register a new device with device ID
         
         Returns:
-            Device: The newly registered device with its credentials.
+            Device: The newly registered device with its credential.
         """
-        return self.device_repository.create_device()
+        return self.device_repository.create_device(device_id)
 
     def authenticate(self, device_id: str, api_key: str):
         """authenticate a device using its ID and API key.

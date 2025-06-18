@@ -1,7 +1,7 @@
 """Interfaces for water record services."""
 from flask import Blueprint, request, jsonify
 from water.application.services import WaterRecordApplicationService
-
+from iam.interfaces.services import authenticate_request
 water_api = Blueprint("water_api", __name__)
 
 water_record_service = WaterRecordApplicationService()
@@ -9,20 +9,18 @@ water_record_service = WaterRecordApplicationService()
 @water_api.route("/api/v1/water-monitoring/data-records", methods=["POST"])
 def create_water_record():
     """Create a new water record.
-    This endpoint allows devices to submit water records with their
-    beats per minute (bpm), and an optional timestamp for when the record was created.
-    A unique device ID will be automatically generated for each record.
-    Returns:
-        JSON response with the created water record details or an error message.
+    Esta versión requiere que el device_id venga en el JSON.
     """
+    auth_result = authenticate_request()
+    if auth_result:
+        return auth_result
     data = request.json
     try:
+        device_id = data["device_id"]
         bpm = data["bpm"]
         created_at = data.get("created_at")
         record = water_record_service.create_water_record(
-            request.headers.get("X-API-Key"),
-            bpm=bpm,
-            created_at=created_at
+            device_id, bpm, created_at, request.headers.get("X-API-Key")
         )
         return jsonify({
             "id": record.id,
