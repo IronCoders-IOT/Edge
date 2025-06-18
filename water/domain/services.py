@@ -11,9 +11,10 @@ class WaterRecordService:
         pass
 
     @staticmethod
-    def create_record(bpm: float, created_at: str | None) -> WaterRecord:
+    def create_record(device_id: str, bpm: float, created_at: str | None) -> WaterRecord:
         """creates a WaterRecord instance.
         Args:
+            device_id (str): Identifier for the device that recorded the BPM.
             bpm (float): Beats per minute recorded by the device.
             created_at (str | None): Timestamp when the record was created, in ISO format.
         Returns:
@@ -27,10 +28,6 @@ class WaterRecordService:
                 parsed_created_at = parse(created_at).astimezone(timezone.utc)
             else:
                 parsed_created_at = datetime.now(timezone.utc)
-            
-            # Generate a unique device ID
-            device_id = str(uuid.uuid4())
-            
         except (ValueError, TypeError):
             raise ValueError("Invalid input for BPM or created_at.")
         return WaterRecord(bpm=bpm, created_at=parsed_created_at, device_id=device_id)
