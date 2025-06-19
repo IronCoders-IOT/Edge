@@ -3,6 +3,7 @@ from water.domain.entities import WaterRecord
 from water.domain.services import WaterRecordService
 from water.infrastructure.repositories import WaterRecordRepository
 from iam.application.services import AuthApplicationService
+from shared.infrastructure import backend_client
 
 
 class WaterRecordApplicationService:
@@ -29,4 +30,5 @@ class WaterRecordApplicationService:
         if not self.iam_service.get_by_id_and_api_key(device_id, api_key):
             raise ValueError("Invalid device ID or API key")
         record = self.water_record_service.create_record(device_id, bpm, created_at)
-        return self.water_record_repository.save(record)
+        saved_record = self.water_record_repository.save(record)
+        return saved_record

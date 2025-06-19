@@ -2,6 +2,7 @@
 from flask import Blueprint, request, jsonify
 from water.application.services import WaterRecordApplicationService
 from iam.interfaces.services import authenticate_request
+from shared.infrastructure import backend_client
 water_api = Blueprint("water_api", __name__)
 
 water_record_service = WaterRecordApplicationService()
@@ -19,13 +20,32 @@ def create_water_record():
         device_id = data["device_id"]
         bpm = data["bpm"]
         created_at = data.get("created_at")
+        eventType= data["eventType"]
+        qualityValue = data["qualityValue"]
+        levelValue = data["levelValue"]
+        sensorId= data["sensorId"]
         record = water_record_service.create_water_record(
             device_id, bpm, created_at, request.headers.get("X-API-Key")
         )
+        # Enviar evento al backend
+        try:
+            event_data = {
+                "eventType": eventType,
+                "qualityValue": qualityValue,
+                "levelValue": levelValue,
+                "sensorId": sensorId,
+            }
+            backend_client.post_event_to_backend(event_data)
+        except Exception as e:
+            pass
         return jsonify({
             "id": record.id,
             "device_id": record.device_id,
             "bpm": record.bpm,
+            "eventType": eventType,
+            "qualityValue": qualityValue,
+            "levelValue": levelValue,
+            "sensorId": sensorId,
             "created_at": record.created_at.isoformat() + "Z"
         }), 201
     except KeyError:
