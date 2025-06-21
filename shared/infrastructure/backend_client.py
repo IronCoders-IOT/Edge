@@ -4,11 +4,11 @@ import threading
 token_lock = threading.Lock()
 _backend_token = None
 
-BACKEND_URL = "http://localhost:8080"  # Cambia esto por la URL real del backend
+BACKEND_URL = "https://aquaconecta-gch4brewcpb5ewhc.centralus-01.azurewebsites.net"  # Cambia esto por la URL real del backend
 LOGIN_ENDPOINT = "/api/v1/authentication/sign-in"  # Ajusta si el endpoint es diferente
 EVENTS_ENDPOINT = "/api/v1/events"       # Ajusta si el endpoint es diferente
-USERNAME = "pupu.pupu"                    # Cambia por el usuario real
-PASSWORD = "DNI"                # Cambia por el password real
+USERNAME = "Nicolas.Quezada"                    # Cambia por el usuario real
+PASSWORD = "76145852"                # Cambia por el password real
 
 def get_backend_token():
     global _backend_token
