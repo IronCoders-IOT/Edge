@@ -4,11 +4,11 @@ import threading
 token_lock = threading.Lock()
 _backend_token = None
 
-BACKEND_URL = "https://aquaconecta-gch4brewcpb5ewhc.centralus-01.azurewebsites.net"  # Cambia esto por la URL real del backend
-LOGIN_ENDPOINT = "/api/v1/authentication/sign-in"  # Ajusta si el endpoint es diferente
-EVENTS_ENDPOINT = "/api/v1/events"       # Ajusta si el endpoint es diferente
-USERNAME = "Nicolas.Quezada"                    # Cambia por el usuario real
-PASSWORD = "76145852"                # Cambia por el password real
+BACKEND_URL = "https://aquaconecta-gch4brewcpb5ewhc.centralus-01.azurewebsites.net" 
+LOGIN_ENDPOINT = "/api/v1/authentication/sign-in"  
+EVENTS_ENDPOINT = "/api/v1/events"       
+USERNAME = "Nicolas.Quezada"                   
+PASSWORD = "76145852"               
 
 def get_backend_token():
     global _backend_token
@@ -19,7 +19,6 @@ def get_backend_token():
         data = {"username": USERNAME, "password": PASSWORD}
         resp = requests.post(url, json=data)
         if resp.status_code == 200:
-            # Ajusta la clave según la respuesta real del backend
             _backend_token = resp.json().get("token")
             return _backend_token
         else:
@@ -32,7 +31,7 @@ def post_event_to_backend(event_data):
     headers = {"Authorization": f"Bearer {token}"}
     resp = requests.post(url, json=event_data, headers=headers)
     if resp.status_code == 401:
-        # Token expirado, refrescar
+        # Token expired, refresh
         with token_lock:
             _backend_token = None
         token = get_backend_token()

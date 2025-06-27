@@ -7,10 +7,9 @@ water_api = Blueprint("water_api", __name__)
 
 water_record_service = WaterRecordApplicationService()
 
-# Autenticación simple embebida
+# Simple embedded authentication
 VALID_DEVICES = {
     "esp32-01": "test-api-key-123",
-    # Agrega más si necesitas: "esp32-02": "otra-clave"
 }
 
 def authenticate_request():
@@ -34,7 +33,7 @@ def authenticate_request():
 @water_api.route("/api/v1/water-monitoring/data-records", methods=["POST"])
 def create_water_record():
     """Create a new water record.
-    Esta versión requiere que el device_id venga en el JSON.
+    This version requires that the device_id comes in the JSON.
     """
     auth_result = authenticate_request()
     if auth_result:
@@ -54,7 +53,7 @@ def create_water_record():
             device_id, bpm, created_at, request.headers.get("X-API-Key")
         )
 
-        # Enviar evento al backend (opcional, se ignora si falla)
+        # Send event to backend (optional, ignored if it fails)
         try:
             event_data = {
                 "eventType": eventType,
