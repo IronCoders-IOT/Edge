@@ -39,7 +39,7 @@ class DeviceRepository:
         device, _ = DeviceModel.get_or_create(
             device_id=device_id,
             defaults={
-                "api_key": "test-api-key-123",
+                "api_key": "test",
                 "created_at": datetime.now(UTC)
             }
         )
