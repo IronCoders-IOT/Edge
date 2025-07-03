@@ -1,7 +1,6 @@
 """Interfaces for water record services."""
 from flask import Blueprint, request, jsonify
 from water.application.services import WaterRecordApplicationService
-from iam.interfaces.services import authenticate_request
 from shared.infrastructure import backend_client
 from water.quality import get_quality_text
 
@@ -18,7 +17,8 @@ def create_water_record():
     auth_result = authenticate_request()
     if auth_result:
         return auth_result
-    data = request.json
+
+    data = request.get_json()
     try:
         device_id = data.get("device_id", "esp32-01")
         if "raw_tds" in data and "raw_distance" in data:
@@ -50,7 +50,8 @@ def create_water_record():
         record = water_record_service.create_water_record(
             device_id, bpm, created_at, request.headers.get("X-API-Key")
         )
-        # Enviar evento al backend
+
+        # Send event to backend (optional, ignored if it fails)
         try:
             event_data = {
                 "eventType": eventType,
@@ -59,8 +60,9 @@ def create_water_record():
                 "sensorId": sensorId,
             }
             backend_client.post_event_to_backend(event_data)
-        except Exception as e:
+        except Exception:
             pass
+
         return jsonify({
             "id": record.id,
             "device_id": record.device_id,
@@ -71,8 +73,8 @@ def create_water_record():
             "sensorId": sensorId,
             "created_at": record.created_at.isoformat() + "Z"
         }), 201
+
     except KeyError:
         return jsonify({"error": "Missing required fields"}), 400
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
-
