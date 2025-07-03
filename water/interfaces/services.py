@@ -9,7 +9,6 @@ water_api = Blueprint("water_api", __name__)
 
 water_record_service = WaterRecordApplicationService()
 
-# Diccionario para guardar la última calidad enviada por cada device_id
 last_quality_sent = {}
 
 @water_api.route("/api/v1/water-monitoring/data-records", methods=["POST"])
