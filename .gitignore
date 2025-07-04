@@ -73,20 +73,20 @@ __pycache__/
 *.pyd
 *.so
 
-# Entornos virtuales
+# Virtual environments
 venv/
 .venv/
 
-# Archivos de base de datos
+# Database files
 *.sqlite
 *.db
 
-# Configuración de IDEs adicionales
+# Additional IDE configuration
 .idea/
 *.sublime-workspace
 *.sublime-project
 
-# Cachés y archivos temporales
+# Caches and temporary files
 .mypy_cache/
 .pytest_cache/
 .coverage
