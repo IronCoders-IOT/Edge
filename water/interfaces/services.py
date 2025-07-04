@@ -1,5 +1,7 @@
 """Interfaces for water record services."""
 from flask import Blueprint, request, jsonify
+
+from iam.interfaces.services import authenticate_request
 from water.application.services import WaterRecordApplicationService
 from shared.infrastructure import backend_client
 from water.quality import get_quality_text
@@ -10,10 +12,11 @@ water_record_service = WaterRecordApplicationService()
 
 last_quality_sent = {}
 
+ALTURA_TANQUE_CM = 14.0
+
 @water_api.route("/api/v1/water-monitoring/data-records", methods=["POST"])
 def create_water_record():
-    """Create a new water record.
-    """
+    """Create a new water record."""
     auth_result = authenticate_request()
     if auth_result:
         return auth_result
@@ -21,23 +24,33 @@ def create_water_record():
     data = request.get_json()
     try:
         device_id = data.get("device_id", "esp32-01")
+        raw_distance_cm = None  # Para incluirlo en la respuesta/debug
+        nivel_porcentaje = None  # Nivel de agua en porcentaje
         if "raw_tds" in data and "raw_distance" in data:
             tds_raw = data["raw_tds"]
             raw_distance = data["raw_distance"]
             # Convert tds_raw to tds (ppm)
             voltage = tds_raw * (3.3 / 4095.0)
-            tds = (133.42 * voltage * voltage * voltage) - (255.86 * voltage * voltage) + (857.39 * voltage)
+            tds = (133.42 * voltage ** 3) - (255.86 * voltage ** 2) + (857.39 * voltage)
             # Conversion from raw_distance to cm
             distance = raw_distance * 0.034 / 2
+            raw_distance_cm = distance
+            # Porcentaje de nivel de agua
+            nivel_porcentaje = max(0, min(100, ((ALTURA_TANQUE_CM - distance) / ALTURA_TANQUE_CM) * 100))
+            print(f"Distancia recibida en cm: {distance:.2f} - Nivel: {nivel_porcentaje:.1f}%")
             qualityValue = get_quality_text(tds)
-            levelValue = distance
+            levelValue = nivel_porcentaje   # <-- CORREGIDO: ahora es el porcentaje
             eventType = "water-measurement"
             sensorId = 1
             bpm = 0
             # Only send POST if the quality has changed
             last_quality = last_quality_sent.get(device_id)
             if last_quality == qualityValue:
-                return jsonify({"message": "Water quality hasn't changed, no POST sent."}), 200
+                return jsonify({
+                    "message": "Water quality hasn't changed, no POST sent.",
+                    "distance_cm": distance,
+                    "nivel_porcentaje": nivel_porcentaje
+                }), 200
             last_quality_sent[device_id] = qualityValue
         else:
             bpm = data["bpm"]
@@ -71,7 +84,9 @@ def create_water_record():
             "qualityValue": qualityValue,
             "levelValue": levelValue,
             "sensorId": sensorId,
-            "created_at": record.created_at.isoformat() + "Z"
+            "created_at": record.created_at.isoformat() + "Z",
+            "distance_cm": raw_distance_cm,
+            "nivel_porcentaje": nivel_porcentaje
         }), 201
 
     except KeyError:
