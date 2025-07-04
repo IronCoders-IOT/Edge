@@ -44,7 +44,12 @@ def create_water_record():
             # Porcentaje de nivel de agua
             nivel_porcentaje = max(0, min(100, ((ALTURA_TANQUE_CM - distance) / ALTURA_TANQUE_CM) * 100))
             print(f"Distancia recibida en cm: {distance:.2f} - Nivel: {nivel_porcentaje:.1f}%")
-            qualityValue = get_quality_text(tds)
+
+            # Si el nivel es 0, el evento dice "no hay agua"
+            if nivel_porcentaje == 0:
+                qualityValue = "No hay agua"
+            else:
+                qualityValue = get_quality_text(tds)
             levelValue = nivel_porcentaje   # porcentaje
             eventType = "water-measurement"
             sensorId = 1
@@ -67,7 +72,8 @@ def create_water_record():
 
             last_quality = last_quality_sent.get(device_id)
             # Solo impedir el POST si NO hay cambio de calidad, NO hay bajada abrupta y NO es nivel crítico
-            if last_quality == qualityValue and not abrupt_drop and not critical_level:
+            # Siempre enviar si nivel_porcentaje == 0
+            if nivel_porcentaje != 0 and last_quality == qualityValue and not abrupt_drop and not critical_level:
                 return jsonify({
                     "message": "No significant event, no POST sent.",
                     "distance_cm": distance,
