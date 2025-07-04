@@ -64,4 +64,34 @@ out/
 # Misc
 *.log
 *.swp
-*.swo 
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+venv/
+.venv/
+
+# Database files
+*.sqlite
+*.db
+
+# Additional IDE configuration
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Caches and temporary files
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.cache/
+pip-wheel-metadata/
+__pypackages__/
+*~ 
