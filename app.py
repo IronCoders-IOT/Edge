@@ -1,8 +1,8 @@
 from flask import Flask
 
 import iam.application.services
+from monitoring.interfaces.services import water_api
 from shared.infrastructure.database import init_db
-from water.interfaces.services import water_api
 from iam.interfaces.services import iam_api
 
 app = Flask(__name__)
