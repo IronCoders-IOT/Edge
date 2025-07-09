@@ -1,13 +1,13 @@
-"""Application services for managing water records."""
-from water.domain.entities import WaterRecord
-from water.domain.services import WaterRecordService
-from water.infrastructure.repositories import WaterRecordRepository
+"""Application services for managing monitoring records."""
+from monitoring.domain.entities import WaterRecord
+from monitoring.domain.services import WaterRecordService
+from monitoring.infrastructure.repositories import WaterRecordRepository
 from iam.application.services import AuthApplicationService
 from shared.infrastructure import backend_client
 
 
 class WaterRecordApplicationService:
-    """Service for managing water records."""
+    """Service for managing monitoring records."""
     def __init__(self):
         """Initialize the health record application service."""
         self.water_record_repository = WaterRecordRepository()
@@ -16,14 +16,14 @@ class WaterRecordApplicationService:
 
     def create_water_record(self, device_id: str, bpm: float, created_at: str, api_key: str) -> WaterRecord:
         """
-        create a new water record.
+        create a new monitoring record.
             Arguments:
                 device_id (str): The ID of the device.
                 bpm (float): The beats per minute value.
                 created_at (str): The timestamp when the record was created.
                 api_key (str): The API key for authentication.
             Returns:
-                HealthRecord: The created water record.
+                HealthRecord: The created monitoring record.
             Raises:
                 ValueError: If the device ID or API key is invalid.
         """

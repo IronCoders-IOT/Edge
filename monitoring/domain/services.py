@@ -1,11 +1,11 @@
 """Domain Services for Health Records."""
 from datetime import timezone, datetime
 from dateutil.parser import parse
-from water.domain.entities import WaterRecord
+from monitoring.domain.entities import WaterRecord
 import uuid
 
 class WaterRecordService:
-    """Service for managing water records."""
+    """Service for managing monitoring records."""
     def __init__(self):
         """Initializes the HealthRecordService."""
         pass

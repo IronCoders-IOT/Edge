@@ -1,11 +1,11 @@
-"""Interfaces for water record services."""
+"""Interfaces for monitoring record services."""
 from flask import Blueprint, request, jsonify
 import time
 
 from iam.interfaces.services import authenticate_request
-from water.application.services import WaterRecordApplicationService
+from monitoring.application.services import WaterRecordApplicationService
 from shared.infrastructure import backend_client
-from water.quality import get_quality_text
+from monitoring.quality import get_quality_text
 
 water_api = Blueprint("water_api", __name__)
 
@@ -21,7 +21,7 @@ ABRUPT_TIME_WINDOW_SEC = 120     # Time window for abrupt drop (seconds)
 
 @water_api.route("/api/v1/water-monitoring/data-records", methods=["POST"])
 def create_water_record():
-    """Create a new water record."""
+    """Create a new monitoring record."""
     auth_result = authenticate_request()
     if auth_result:
         return auth_result
@@ -45,13 +45,13 @@ def create_water_record():
             level_percentage = max(0, min(100, ((TANK_HEIGHT_CM - distance) / TANK_HEIGHT_CM) * 100))
             print(f"Received distance in cm: {distance:.2f} - Level: {level_percentage:.1f}%")
 
-            # If the level is 0, the event says "no water"
+            # If the level is 0, the event says "no monitoring"
             if level_percentage == 0:
-                qualityValue = "No water"
+                qualityValue = "No monitoring"
             else:
                 qualityValue = get_quality_text(tds)
             levelValue = level_percentage   # percentage
-            eventType = "water-measurement"
+            eventType = "monitoring-measurement"
             sensorId = 1
             bpm = 0
 

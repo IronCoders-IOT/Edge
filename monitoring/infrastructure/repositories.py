@@ -1,6 +1,6 @@
 """Repository for Health Records."""
-from water.domain.entities import WaterRecord
-from water.infrastructure.models import WaterRecord as WaterRecordModel
+from monitoring.domain.entities import WaterRecord
+from monitoring.infrastructure.models import WaterRecord as WaterRecordModel
 
 class WaterRecordRepository:
     """
@@ -9,11 +9,11 @@ class WaterRecordRepository:
     @staticmethod
     def save(water_record) -> WaterRecord:
         """
-        Save a water record to the database.
+        Save a monitoring record to the database.
             Arguments:
-                water_record (WaterRecord): The water record to save.
+                water_record (WaterRecord): The monitoring record to save.
             Returns:
-                WaterRecord: The saved water record with its ID.
+                WaterRecord: The saved monitoring record with its ID.
         """
         record = WaterRecordModel.create(
             device_id   = water_record.device_id,
