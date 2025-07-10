@@ -14,10 +14,11 @@ water_record_service = WaterRecordApplicationService()
 last_quality_sent = {}  # device_id: last_quality
 last_level_sent = {}    # device_id: (level_percentage, timestamp)
 
-TANK_HEIGHT_CM = 14.0  # Total tank height in centimeters
+LEVEL_DIFF_THRESHOLD = 5  # Enviar POST si cambia ±5% respecto al último evento
 LEVEL_CRITICAL_THRESHOLD = 20    # Critical low level percentage
-ABRUPT_DROP_THRESHOLD = 10       # Abrupt drop in percentage
-ABRUPT_TIME_WINDOW_SEC = 120     # Time window for abrupt drop (seconds)
+
+DIST_FULL = 3.0   # Cambia por la distancia real con el tanque lleno
+DIST_EMPTY = 14.0 # Cambia por la distancia real con el tanque vacío
 
 @water_api.route("/api/v1/water-monitoring/data-records", methods=["POST"])
 def create_water_record():
@@ -41,39 +42,54 @@ def create_water_record():
             # Conversion from raw_distance to cm
             distance = raw_distance * 0.034 / 2
             raw_distance_cm = distance
-            # Water level percentage
-            level_percentage = max(0, min(100, ((TANK_HEIGHT_CM - distance) / TANK_HEIGHT_CM) * 100))
+
+            # --- Ajuste para marcar 100% cuando lleno y 0% cuando vacío ---
+            if distance <= DIST_FULL:
+                level_percentage = 100.0
+            elif distance >= DIST_EMPTY:
+                level_percentage = 0.0
+            else:
+                level_percentage = ((DIST_EMPTY - distance) / (DIST_EMPTY - DIST_FULL)) * 100.0
+                level_percentage = max(0, min(100, level_percentage))
+
             print(f"Received distance in cm: {distance:.2f} - Level: {level_percentage:.1f}%")
 
-            # If the level is 0, the event says "no monitoring"
+            # If the level is 0, the event says "without water"
             if level_percentage == 0:
-                qualityValue = "No monitoring"
+                qualityValue = "without water"
             else:
                 qualityValue = get_quality_text(tds)
-            levelValue = level_percentage   # percentage
-            eventType = "monitoring-measurement"
-            sensorId = 1
+            levelValue = level_percentage  # percentage
+            eventType = "monitoring measurement"
+            deviceId = 1
             bpm = 0
 
             # Logic to determine if POST should be sent
             now = time.time()
-            abrupt_drop = False
-            critical_level = False
+            send_post = False
 
-            last_level_tuple = last_level_sent.get(device_id)
-            if last_level_tuple:
-                prev_level, prev_time = last_level_tuple
-                # Detect abrupt drop (>10% in less than 2 minutes)
-                if prev_level - level_percentage > ABRUPT_DROP_THRESHOLD and now - prev_time < ABRUPT_TIME_WINDOW_SEC:
-                    abrupt_drop = True
-            # Detect critical level
-            if level_percentage < LEVEL_CRITICAL_THRESHOLD:
-                critical_level = True
+            prev_level_tuple = last_level_sent.get(device_id)
+            prev_quality = last_quality_sent.get(device_id)
 
-            last_quality = last_quality_sent.get(device_id)
-            # Only prevent POST if there is NO quality change, NO abrupt drop, and NOT critical level
-            # Always send if level_percentage == 0
-            if level_percentage != 0 and last_quality == qualityValue and not abrupt_drop and not critical_level:
+            # Forzar POST si es la primera vez
+            if prev_level_tuple is None or prev_quality is None:
+                send_post = True
+            else:
+                prev_level, prev_time = prev_level_tuple
+                # Checar si cambio en nivel es >=5%
+                if abs(prev_level - level_percentage) >= LEVEL_DIFF_THRESHOLD:
+                    send_post = True
+                # Checar si cambio en calidad de agua
+                elif prev_quality != qualityValue:
+                    send_post = True
+                # Checar si es nivel crítico
+                elif level_percentage < LEVEL_CRITICAL_THRESHOLD:
+                    send_post = True
+                # Checar si el nivel es 0
+                elif level_percentage == 0:
+                    send_post = True
+
+            if not send_post:
                 return jsonify({
                     "message": "No significant event, no POST sent.",
                     "distance_cm": distance,
@@ -89,7 +105,7 @@ def create_water_record():
             eventType = data["eventType"]
             qualityValue = data["qualityValue"]
             levelValue = data["levelValue"]
-            sensorId = data["sensorId"]
+            deviceId = data["deviceId"]
 
         created_at = data.get("created_at")
 
@@ -102,8 +118,8 @@ def create_water_record():
             event_data = {
                 "eventType": eventType,
                 "qualityValue": qualityValue,
-                "levelValue": levelValue,
-                "sensorId": sensorId,
+                "levelValue": round(float(levelValue), 2),
+                "deviceId": deviceId,
             }
             backend_client.post_event_to_backend(event_data)
         except Exception:
@@ -115,13 +131,9 @@ def create_water_record():
             "bpm": record.bpm,
             "eventType": eventType,
             "qualityValue": qualityValue,
-            "levelValue": levelValue,
-            "sensorId": sensorId,
-            "created_at": record.created_at.isoformat() + "Z",
             "distance_cm": raw_distance_cm,
             "level_percentage": level_percentage
         }), 201
-
     except KeyError:
         return jsonify({"error": "Missing required fields"}), 400
     except ValueError as e:

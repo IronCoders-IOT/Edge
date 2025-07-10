@@ -7,8 +7,8 @@ _backend_token = None
 BACKEND_URL = "https://aquaconecta-gch4brewcpb5ewhc.centralus-01.azurewebsites.net" 
 LOGIN_ENDPOINT = "/api/v1/authentication/sign-in"  
 EVENTS_ENDPOINT = "/api/v1/events"       
-USERNAME = "Nicolas.Quezada"                   
-PASSWORD = "76145852"               
+USERNAME = "Belen.Ramos"
+PASSWORD = "99887766"
 
 def get_backend_token():
     global _backend_token
