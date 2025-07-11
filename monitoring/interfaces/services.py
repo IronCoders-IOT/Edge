@@ -18,11 +18,11 @@ water_record_service = WaterRecordApplicationService()
 last_quality_sent = {}  # device_id: last_quality
 last_level_sent = {}    # device_id: (level_percentage, timestamp)
 
-LEVEL_DIFF_THRESHOLD = 5  # Enviar POST si cambia ±5% respecto al último evento
+LEVEL_DIFF_THRESHOLD = 5  # Send POST if it changes ±5% compared to the last event
 LEVEL_CRITICAL_THRESHOLD = 20    # Critical low level percentage
 
-DIST_FULL = 3.0   # Cambia por la distancia real con el tanque lleno
-DIST_EMPTY = 14.0 # Cambia por la distancia real con el tanque vacío
+DIST_FULL = 3.0   # Change to the real distance with the tank full
+DIST_EMPTY = 14.0 # Change to the real distance with the tank empty
 
 @water_api.route("/api/v1/water-monitoring/data-records", methods=["POST"])
 def create_water_record():
@@ -51,7 +51,7 @@ def create_water_record():
             distance = raw_distance * 0.034 / 2
             raw_distance_cm = distance
 
-            # --- Ajuste para marcar 100% cuando lleno y 0% cuando vacío ---
+            # --- Adjustment to mark 100% when full and 0% when empty ---
             if distance <= DIST_FULL:
                 level_percentage = 100.0
             elif distance >= DIST_EMPTY:
@@ -79,21 +79,21 @@ def create_water_record():
             prev_level_tuple = last_level_sent.get(device_id)
             prev_quality = last_quality_sent.get(device_id)
 
-            # Forzar POST si es la primera vez
+            # Force POST if it is the first time
             if prev_level_tuple is None or prev_quality is None:
                 send_post = True
             else:
                 prev_level, prev_time = prev_level_tuple
-                # Checar si cambio en nivel es >=5%
+                # Check if level change is >=5%
                 if abs(prev_level - level_percentage) >= LEVEL_DIFF_THRESHOLD:
                     send_post = True
-                # Checar si cambio en calidad de agua
+                # Check if water quality changed
                 elif prev_quality != qualityValue:
                     send_post = True
-                # Checar si es nivel crítico
+                # Check if level is critical
                 elif level_percentage < LEVEL_CRITICAL_THRESHOLD:
                     send_post = True
-                # Checar si el nivel es 0
+                # Check if the level is 0
                 elif level_percentage == 0:
                     send_post = True
 
