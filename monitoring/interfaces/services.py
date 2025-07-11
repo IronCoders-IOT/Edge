@@ -7,6 +7,10 @@ from monitoring.application.services import WaterRecordApplicationService
 from shared.infrastructure import backend_client
 from monitoring.quality import get_quality_text
 
+DEVICE_ID_MAP = {
+    "esp32-01": 1,
+    "esp32-wokwi": 2,
+}
 water_api = Blueprint("water_api", __name__)
 
 water_record_service = WaterRecordApplicationService()
@@ -32,6 +36,10 @@ def create_water_record():
         device_id = data.get("device_id", "esp32-01")
         raw_distance_cm = None  # To include in the response/debug
         level_percentage = None  # Water level in percentage
+
+        internal_device_id = DEVICE_ID_MAP.get(device_id)
+        if internal_device_id is None:
+            return jsonify({"error": f"Unknown device_id: {device_id}"}), 400
 
         if "raw_tds" in data and "raw_distance" in data:
             tds_raw = data["raw_tds"]
@@ -61,7 +69,7 @@ def create_water_record():
                 qualityValue = get_quality_text(tds)
             levelValue = level_percentage  # percentage
             eventType = "monitoring measurement"
-            deviceId = 1
+            deviceId = internal_device_id
             bpm = 0
 
             # Logic to determine if POST should be sent
